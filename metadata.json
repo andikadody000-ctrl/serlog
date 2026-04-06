@@ -1,0 +1,8 @@
+{
+  "name": "Serlog Logistics",
+  "description": "A comprehensive logistics management application for couriers, featuring real-time tracking, POD (Proof of Delivery), and shipment management.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}

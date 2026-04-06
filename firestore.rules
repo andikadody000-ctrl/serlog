@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: userId (Auth UID)
+    // Fields:
+    //   - uid: string (required) - Firebase Auth UID
+    //   - name: string (required) - Full name
+    //   - email: string (required) - Email address
+    //   - city: string (required) - City code
+    //   - role: string (required) - User role (courier, admin)
+    //
+    // Collection: shipments
+    // Document ID: resi
+    // Fields:
+    //   - resi: string (required) - Shipment ID
+    //   - status: string (required) - Current status (pending, with_courier, delivered)
+    //   - origin: string (required) - Origin city
+    //   - destination: string (required) - Destination city
+    //   - weight: number (required) - Weight in Kg
+    //   - courierUid: string (required) - UID of the assigned courier
+    //   - lastUpdate: timestamp (required) - Last update time
+    //
+    // Collection: pods
+    // Document ID: resi
+    // Fields:
+    //   - resi: string (required) - Shipment ID
+    //   - recipientName: string (required) - Name of receiver
+    //   - relationship: string (required) - Relationship to recipient
+    //   - photoUrl: string (optional) - Photo URL
+    //   - signatureUrl: string (optional) - Signature URL
+    //   - location: map (optional) - Latitude and Longitude
+    //   - timestamp: timestamp (required) - Delivery time
+    //   - courierUid: string (required) - Courier UID
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "andikadody000@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'name', 'email', 'city', 'role']) &&
+             data.uid == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             data.city is string && data.city.size() > 0 && data.city.size() < 10 &&
+             data.role in ['courier', 'admin'];
+    }
+
+    function isValidShipment(data) {
+      return hasRequiredFields(['resi', 'status', 'origin', 'destination', 'weight', 'courierUid', 'lastUpdate']) &&
+             data.resi is string && data.resi.size() > 0 &&
+             data.status in ['pending', 'with_courier', 'delivered'] &&
+             data.origin is string && data.origin.size() > 0 &&
+             data.destination is string && data.destination.size() > 0 &&
+             data.weight is number &&
+             data.courierUid is string &&
+             data.lastUpdate is timestamp;
+    }
+
+    function isValidPOD(data) {
+      return hasRequiredFields(['resi', 'recipientName', 'relationship', 'timestamp', 'courierUid']) &&
+             data.resi is string && data.resi.size() > 0 &&
+             data.recipientName is string && data.recipientName.size() > 0 &&
+             data.relationship is string &&
+             data.timestamp is timestamp &&
+             data.courierUid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'courier' || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /shipments/{shipmentId} {
+      allow read: if isAuthenticated() && (resource.data.courierUid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidShipment(request.resource.data);
+      allow update: if isAuthenticated() && (resource.data.courierUid == request.auth.uid || isAdmin()) && isValidShipment(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /pods/{podId} {
+      allow read: if isAuthenticated() && (resource.data.courierUid == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidPOD(request.resource.data);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}

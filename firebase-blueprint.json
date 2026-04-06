@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Courier profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "name": { "type": "string", "description": "Full name of the courier" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "city": { "type": "string", "description": "City code (e.g., KNO, CGK)" },
+        "role": { "type": "string", "enum": ["courier", "admin"], "description": "User role" }
+      },
+      "required": ["uid", "name", "email", "city", "role"]
+    },
+    "Shipment": {
+      "title": "Shipment",
+      "description": "Details of a shipment/package",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Shipment ID" },
+        "courierId": { "type": "string", "description": "UID of the assigned courier" },
+        "status": { "type": "string", "enum": ["pending", "in-transit", "delivered", "failed"], "description": "Current status" },
+        "recipientName": { "type": "string", "description": "Name of the recipient" },
+        "address": { "type": "string", "description": "Delivery address" },
+        "city": { "type": "string", "description": "Destination city code" },
+        "podUrl": { "type": "string", "description": "URL to Proof of Delivery image" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["id", "courierId", "status", "recipientName", "address", "city", "createdAt"]
+    },
+    "POD": {
+      "title": "Proof of Delivery",
+      "description": "Proof of delivery information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "POD ID" },
+        "shipmentId": { "type": "string", "description": "ID of the associated shipment" },
+        "courierId": { "type": "string", "description": "UID of the courier who delivered" },
+        "recipientName": { "type": "string", "description": "Name of the person who received" },
+        "photoUrl": { "type": "string", "description": "URL to the POD photo" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Time of delivery" }
+      },
+      "required": ["id", "shipmentId", "courierId", "recipientName", "photoUrl", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile document"
+    },
+    "/shipments/{shipmentId}": {
+      "schema": "Shipment",
+      "description": "Shipment document"
+    },
+    "/pods/{podId}": {
+      "schema": "POD",
+      "description": "Proof of delivery document"
+    }
+  }
+}

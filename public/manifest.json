@@ -1,0 +1,21 @@
+{
+  "name": "Serlog Logistics",
+  "short_name": "Serlog",
+  "description": "Aplikasi Logistik Kurir Serlog",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#dc2626",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/serlog/192/192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://picsum.photos/seed/serlog/512/512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
