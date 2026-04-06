@@ -79,7 +79,7 @@ export default function Login() {
               transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
               className="inline-block text-xs font-bold text-red-600 uppercase tracking-widest"
             >
-              Terima kasih sudah selalu on-time dan menjaga paket saya dengan aman sampai tujuan.
+              Terima kasih sudah selalu on-time dan menjaga paket dengan aman sampai tujuan.
             </motion.div>
           </div>
         </div>
