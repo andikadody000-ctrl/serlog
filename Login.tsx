@@ -166,7 +166,7 @@ export default function Login() {
         </div>
       </div>
 
-      <div className="absolute bottom-4 right-4 text-xs font-bold text-gray-400">V2.1.3</div>
+      <div className="absolute bottom-4 center-4 text-xs font-bold text-gray-400">Serlog Logistics V2.1.3</div>
     </div>
   );
 }
